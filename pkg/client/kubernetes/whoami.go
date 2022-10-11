@@ -3,16 +3,17 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+
 	authenticationapi "k8s.io/api/authentication/v1"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"net/http"
-	"os"
-	"regexp"
-	"strings"
 )
 
 // source: https://github.com/rajatjindal/kubectl-whoami/
@@ -23,7 +24,7 @@ type tokenRetriever struct {
 	token        string
 }
 
-//RoundTrip gets token
+// RoundTrip gets token
 func (t *tokenRetriever) RoundTrip(req *http.Request) (*http.Response, error) {
 	header := req.Header.Get("authorization")
 	switch {

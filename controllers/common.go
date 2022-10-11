@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"flag"
+	"time"
 
 	"github.com/redhat-developer/service-binding-operator/pkg/client/kubernetes"
 
@@ -99,12 +100,18 @@ func (r *BindingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return ctrl.Result{}, err
 		}
 	}
+
+	var retry bool
+	var delay time.Duration
+
 	if !serviceBinding.HasDeletionTimestamp() {
 		log.Info("Reconciling")
+		retry, delay, err = r.pipeline.Process(serviceBinding) // <.>
 	} else {
 		log.Info("Deleted, unbind the application")
+		retry = false
+		err = nil
 	}
-	retry, delay, err := r.pipeline.Process(serviceBinding) // <.>
 	if !retry && err == nil {
 		if serviceBinding.HasDeletionTimestamp() {
 			if apis.MaybeRemoveFinalizer(serviceBinding) {
